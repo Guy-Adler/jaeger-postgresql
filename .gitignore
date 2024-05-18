@@ -18,3 +18,5 @@ jaeger/
 jaeger-all-in-one
 
 *.tgz
+
+.vscode/

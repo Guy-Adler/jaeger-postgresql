@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/robbert229/jaeger-postgresql/internal/sql"
-	"github.com/robbert229/jaeger-postgresql/internal/sqltest"
+	"github.com/Guy-Adler/jaeger-postgresql/internal/sql"
+	"github.com/Guy-Adler/jaeger-postgresql/internal/sqltest"
 
 	"github.com/stretchr/testify/require"
 

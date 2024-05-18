@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/robbert229/jaeger-postgresql/internal/sql"
+	"github.com/Guy-Adler/jaeger-postgresql/internal/sql"
 
 	"github.com/jaegertracing/jaeger/model"
 	"github.com/jaegertracing/jaeger/storage/spanstore"

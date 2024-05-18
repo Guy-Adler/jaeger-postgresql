@@ -13,7 +13,7 @@ patches and features.
 
 ## Using the issue tracker
 
-The [issue tracker](https://github.com/robbert229/jaeger-postgresql/issues) is
+The [issue tracker](https://github.com/Guy-Adler/jaeger-postgresql/issues) is
 the preferred channel for [bug reports](#bugs), [features requests](#features)
 and [submitting pull requests](#pull-requests).
 
@@ -105,7 +105,7 @@ included in the project:
     # Navigate to the newly cloned directory
     cd jaeger-postgresql
     # Assign the original repo to a remote called "upstream"
-    git remote add upstream https://github.com/robbert229/jaeger-postgresql.git
+    git remote add upstream https://github.com/Guy-Adler/jaeger-postgresql.git
     ```
 
 2.  If you cloned a while ago, get the latest changes from upstream:
@@ -139,7 +139,7 @@ included in the project:
     with a clear title and description.
 
 **IMPORTANT**: By submitting a patch, you agree to allow the project
-owners to license your work under the terms of the [MIT License](https://github.com/robbert229/jaeger-postgresql/blob/main/LICENSE.md).
+owners to license your work under the terms of the [MIT License](https://github.com/Guy-Adler/jaeger-postgresql/blob/main/LICENSE.md).
 
 
 # Collaborating guidelines

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/robbert229/jaeger-postgresql/internal/sql"
+	"github.com/Guy-Adler/jaeger-postgresql/internal/sql"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jaegertracing/jaeger/model"

@@ -14,7 +14,7 @@ service:
 
   replicaCount: 2
 
-  image: ko://github.com/robbert229/jaeger-postgresql/cmd/jaeger-postgresql
+  image: ko://github.com/Guy-Adler/jaeger-postgresql/cmd/jaeger-postgresql
   imagePullPolicy: IfNotPresent
 
   imagePullSecrets: []
@@ -68,7 +68,7 @@ cleaner:
   maxSpanAge: 24h
   logLevel: "debug"
 
-  image: ko://github.com/robbert229/jaeger-postgresql/cmd/jaeger-postgresql-cleaner
+  image: ko://github.com/Guy-Adler/jaeger-postgresql/cmd/jaeger-postgresql-cleaner
   imagePullPolicy: IfNotPresent
 
   imagePullSecrets: []

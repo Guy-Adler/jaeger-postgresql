@@ -1,4 +1,4 @@
-module github.com/robbert229/jaeger-postgresql
+module github.com/Guy-Adler/jaeger-postgresql
 
 go 1.21
 

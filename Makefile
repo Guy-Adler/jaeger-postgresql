@@ -4,9 +4,9 @@ VERSION ?= 'v1.5.0' # x-release-please-version
 
 .PHONY: publish
 publish:
-	KO_DOCKER_REPO=ghcr.io/robbert229/jaeger-postgresql/ ko resolve --base-import-paths -t $(VERSION) -f ./charts/jaeger-postgresql/values-template.yaml > ./charts/jaeger-postgresql/values.yaml
+	KO_DOCKER_REPO=ghcr.io/Guy-Adler/jaeger-postgresql/ ko resolve --base-import-paths -t $(VERSION) -f ./charts/jaeger-postgresql/values-template.yaml > ./charts/jaeger-postgresql/values.yaml
 	helm package ./charts/jaeger-postgresql --app-version $(VERSION) --version $(VERSION) --destination=./hack/charts/
-	helm push ./hack/charts/jaeger-postgresql-$(VERSION).tgz oci://ghcr.io/robbert229/jaeger-postgresql/charts
+	helm push ./hack/charts/jaeger-postgresql-$(VERSION).tgz oci://ghcr.io/Guy-Adler/jaeger-postgresql/charts
 
 # plugin-start starts Jaeger-PostgreSQL
 .PHONY: plugin-start

@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Guy-Adler/jaeger-postgresql/internal/logger"
+	"github.com/Guy-Adler/jaeger-postgresql/internal/sql"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/robbert229/jaeger-postgresql/internal/logger"
-	"github.com/robbert229/jaeger-postgresql/internal/sql"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"

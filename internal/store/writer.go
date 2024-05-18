@@ -6,7 +6,7 @@ import (
 	"io"
 	"log/slog"
 
-	"github.com/robbert229/jaeger-postgresql/internal/sql"
+	"github.com/Guy-Adler/jaeger-postgresql/internal/sql"
 
 	"go.opentelemetry.io/otel/trace"
 

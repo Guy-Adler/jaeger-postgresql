@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/Guy-Adler/jaeger-postgresql/internal/sql"
 	"github.com/jackc/pgx/v5"
-	"github.com/robbert229/jaeger-postgresql/internal/sql"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
