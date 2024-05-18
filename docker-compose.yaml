@@ -8,15 +8,42 @@ services:
     restart: always
     ports:
       - "5432:5432"
+  jaeger-postgres:
+    container_name: jaeger-postgres
+    image: jaeger-postgres
+    build:
+      dockerfile: ./Dockerfile.dev
+      context: .
+    depends_on:
+      - postgres
+    ports:
+      - 12345:12345
+      - 12346:12346
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./cmd/jaeger-postgresql
+          target: /app/cmd
+        - action: sync+restart
+          path: ./internal
+          target: /app/internal
+        - action: rebuild
+          path: ./go.mod
+          target: /app/go.mod
+        - action: rebuild
+          path: ./go.sum
+          target: /app/go.sum
   jaeger:
     container_name: jaeger
     image: jaegertracing/all-in-one:1.57.0
-    network_mode: "host"
     ports:
       - 16686:16686
       - 4317:4317
       - 4318:4318
+    restart: always
     environment:
-      COLLECTOR_OTLP_ENABLED: 'true'
-      SPAN_STORAGE_TYPE: 'grpc-plugin'
-      GRPC_STORAGE_SERVER: 127.0.0.1:12345
+      COLLECTOR_OTLP_ENABLED: "true"
+      SPAN_STORAGE_TYPE: "grpc-plugin"
+      GRPC_STORAGE_SERVER: jaeger-postgres:12345
+    depends_on:
+      - jaeger-postgres
