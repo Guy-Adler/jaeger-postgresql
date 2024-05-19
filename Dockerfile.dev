@@ -10,4 +10,4 @@ COPY ./internal ./internal
 
 EXPOSE 12345 12346
 
-CMD [ "go", "run", "-v", "/app/cmd", "--database.url=postgres://postgres:password@postgres:5432/jaeger", "--log-level=debug" ]
+CMD [ "go", "run", "-v", "/app/cmd", "--database.url=postgres://postgres:password@postgres:5432/jaeger" ]
