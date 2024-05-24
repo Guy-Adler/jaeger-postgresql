@@ -146,7 +146,8 @@ func (r *Reader) FindTraces(ctx context.Context, query *spanstore.TraceQueryPara
 		DurationMaximum:              EncodeInterval(query.DurationMax),
 		DurationMaximumEnableFilter:  query.DurationMax != time.Duration(0),
 		NumTraces:                    int32(query.NumTraces),
-		// Tags
+		Tags:                         query.Tags,
+		TagsEnableFilter:             len(query.Tags) > 0,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to query trace ids: %w", err)
@@ -189,8 +190,8 @@ func (r *Reader) FindTraceIDs(ctx context.Context, query *spanstore.TraceQueryPa
 		DurationMinimumEnableFilter:  query.DurationMin > 0*time.Second,
 		DurationMaximum:              EncodeInterval(query.DurationMax),
 		DurationMaximumEnableFilter:  query.DurationMax > 0*time.Second,
-		// TODO(johnrowl) add tags
-		NumTraces: int32(query.NumTraces),
+		Tags:                         query.Tags,
+		NumTraces:                    int32(query.NumTraces),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to query trace ids: %w", err)

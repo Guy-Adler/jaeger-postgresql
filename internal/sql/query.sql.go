@@ -2,6 +2,7 @@ package sql
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -32,10 +33,15 @@ WHERE
     (start_time >= $5::TIMESTAMP OR $6::BOOLEAN = FALSE) AND
     (start_time <= $7::TIMESTAMP OR $8::BOOLEAN = FALSE) AND
     (duration >= $9::INTERVAL OR $10::BOOLEAN = FALSE) AND
-    (duration <= $11::INTERVAL OR $12::BOOLEAN = FALSE)
-LIMIT $13
+    (duration <= $11::INTERVAL OR $12::BOOLEAN = FALSE) AND
+		($14::BOOLEAN = FALSE OR (tags @> $13::JSONB) OR (process_tags @> $13::JSONB))
+LIMIT $15
 `
 
+type TagContent struct {
+	Key   string
+	Value string
+}
 type FindTraceIDsParams struct {
 	ServiceName                  string
 	ServiceNameEnableFilter      bool
@@ -49,10 +55,27 @@ type FindTraceIDsParams struct {
 	DurationMinimumEnableFilter  bool
 	DurationMaximum              pgtype.Interval
 	DurationMaximumEnableFilter  bool
+	Tags                         map[string]string
+	TagsEnableFilter             bool
 	NumTraces                    int32
 }
 
+func formatTags(tags map[string]string) []TagContent {
+	parsedTags := make([]TagContent, 0, len(tags))
+	for key, value := range tags {
+		parsedTags = append(parsedTags, TagContent{
+			Key:   key,
+			Value: value,
+		})
+	}
+	return parsedTags
+}
+
 func (q *Queries) FindTraceIDs(ctx context.Context, arg FindTraceIDsParams) ([][]byte, error) {
+	tags := formatTags(arg.Tags)
+
+	fmt.Printf("tags: %+t\n", tags)
+
 	rows, err := q.db.Query(ctx, findTraceIDs,
 		arg.ServiceName,
 		arg.ServiceNameEnableFilter,
@@ -66,6 +89,8 @@ func (q *Queries) FindTraceIDs(ctx context.Context, arg FindTraceIDsParams) ([][
 		arg.DurationMinimumEnableFilter,
 		arg.DurationMaximum,
 		arg.DurationMaximumEnableFilter,
+		tags,
+		arg.TagsEnableFilter,
 		arg.NumTraces,
 	)
 	if err != nil {

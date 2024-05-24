@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -75,43 +76,45 @@ func encodeTagsToSlice(input []model.KeyValue) [][]any {
 	return slice
 }
 
-type tagContent struct {
-	Type  model.ValueType
-	Value any
+type databaseTag struct {
+	sql.TagContent
+	Type model.ValueType
 }
 
-func encodeTagsToStruct(input []model.KeyValue) map[string]tagContent {
-	object := make(map[string]tagContent)
+func encodeTagsToStruct(input []model.KeyValue) []databaseTag {
+	// object := make(map[string]sql.TagContent)
+	slice := make([]databaseTag, len(input))
 
 	for _, kv := range input {
-		var value tagContent
+		var value databaseTag
 		value.Type = kv.VType
+		value.Key = kv.Key
 
 		switch kv.VType {
 		case model.ValueType_STRING:
 			value.Value = kv.VStr
 		case model.ValueType_BOOL:
-			value.Value = kv.VBool
+			value.Value = strconv.FormatBool(kv.VBool)
 		case model.ValueType_INT64:
-			value.Value = fmt.Sprintf("%d", kv.VInt64)
+			value.Value = strconv.FormatInt(kv.VInt64, 10)
 		case model.ValueType_FLOAT64:
-			value.Value = kv.VFloat64
+			value.Value = strconv.FormatFloat(kv.VFloat64, 'f', -1, 64)
 		case model.ValueType_BINARY:
 			value.Value = base64.RawStdEncoding.EncodeToString(kv.VBinary)
 		}
 
-		object[kv.Key] = value
+		slice = append(slice, value)
 	}
 
-	return object
+	return slice
 }
 
 func EncodeTags(input []model.KeyValue) ([]byte, error) {
 	// slice := encodeTagsToSlice(input)
-	object := encodeTagsToStruct(input)
+	slice := encodeTagsToStruct(input)
 
 	// bytes, err := json.Marshal(slice)
-	bytes, err := json.Marshal(object)
+	bytes, err := json.Marshal(slice)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode to json: %w", err)
 	}
@@ -173,51 +176,62 @@ func variableIsMap(variable interface{}) bool {
 	}
 }
 
-func decodeTagsFromStruct(object map[string]any) ([]model.KeyValue, error) {
-	tags := make([]model.KeyValue, len(object))
+func decodeTagsFromStruct(objects []any) ([]model.KeyValue, error) {
+	tags := make([]model.KeyValue, len(objects))
 
-	i := 0
-
-	for key, valueAndType := range object {
-		if !variableIsMap(valueAndType) {
-			return nil, fmt.Errorf("ValueAndType is not a map: %v", valueAndType)
+	for _, tag := range objects {
+		if !variableIsMap(tag) {
+			return nil, errors.New(fmt.Sprintf("Tag is not a map: %v", tag))
 		}
 
-		cast := valueAndType.(map[string]any)
-		value, ok := cast["Value"]
-		preCastValueType, ok2 := cast["Type"]
+		cast := tag.(map[string]any)
+		preCastKey, ok1 := cast["Key"]
+		preCastValue, ok2 := cast["Value"]
+		preCastValueType, ok3 := cast["Type"]
 
-		if !ok || !ok2 {
-			return nil, fmt.Errorf("ValueAndType did not include all necessary keys: %v", cast)
+		if !ok1 || !ok2 || !ok3 {
+			return nil, errors.New(fmt.Sprintf("Tag has missing keys: %v", tag))
 		}
 
+		key := preCastKey.(string)
+		value := preCastValue.(string)
 		valueType := model.ValueType(int(preCastValueType.(float64)))
 
-		kv := model.KeyValue{Key: key, VType: valueType}
+		kv := model.KeyValue{
+			Key:   key,
+			VType: valueType,
+		}
 
 		switch valueType {
 		case model.StringType:
-			kv.VStr = value.(string)
+			kv.VStr = value
 		case model.BoolType:
-			kv.VBool = value.(bool)
+			parsed, err := strconv.ParseBool(value)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse boolean: %w", err)
+			}
+			kv.VBool = parsed
 		case model.Int64Type:
-			parsed, err := strconv.ParseInt(value.(string), 10, 64)
+			parsed, err := strconv.ParseInt(value, 10, 64)
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse int: %w", err)
 			}
 			kv.VInt64 = parsed
 		case model.Float64Type:
-			kv.VFloat64 = value.(float64)
+			parsed, err := strconv.ParseFloat(value, 64)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse float: %w", err)
+			}
+			kv.VFloat64 = parsed
 		case model.BinaryType:
-			bytes, err := base64.RawStdEncoding.DecodeString(value.(string))
+			bytes, err := base64.RawStdEncoding.DecodeString(value)
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse: %w", err)
 			}
 			kv.VBinary = bytes
 		}
 
-		tags[i] = kv
-		i++
+		tags = append(tags, kv)
 	}
 
 	return tags, nil
@@ -225,7 +239,7 @@ func decodeTagsFromStruct(object map[string]any) ([]model.KeyValue, error) {
 
 func DecodeTags(input []byte) ([]model.KeyValue, error) {
 	// slice := []any{}
-	slice := map[string]any{}
+	slice := []any{}
 	if err := json.Unmarshal(input, &slice); err != nil {
 		return nil, fmt.Errorf("failed to decode tag json: %w", err)
 	}
