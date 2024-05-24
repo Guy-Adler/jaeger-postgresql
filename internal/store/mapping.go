@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -81,40 +80,31 @@ type databaseTag struct {
 	Type model.ValueType
 }
 
-func encodeTagsToStruct(input []model.KeyValue) []databaseTag {
-	// object := make(map[string]sql.TagContent)
-	slice := make([]databaseTag, len(input))
+func EncodeTags(input []model.KeyValue) ([]byte, error) {
+	tags := make([]databaseTag, 0, len(input))
 
 	for _, kv := range input {
-		var value databaseTag
-		value.Type = kv.VType
-		value.Key = kv.Key
+		var tag databaseTag
+		tag.Type = kv.VType
+		tag.Key = kv.Key
 
 		switch kv.VType {
 		case model.ValueType_STRING:
-			value.Value = kv.VStr
+			tag.Value = kv.VStr
 		case model.ValueType_BOOL:
-			value.Value = strconv.FormatBool(kv.VBool)
+			tag.Value = strconv.FormatBool(kv.VBool)
 		case model.ValueType_INT64:
-			value.Value = strconv.FormatInt(kv.VInt64, 10)
+			tag.Value = strconv.FormatInt(kv.VInt64, 10)
 		case model.ValueType_FLOAT64:
-			value.Value = strconv.FormatFloat(kv.VFloat64, 'f', -1, 64)
+			tag.Value = strconv.FormatFloat(kv.VFloat64, 'f', -1, 64)
 		case model.ValueType_BINARY:
-			value.Value = base64.RawStdEncoding.EncodeToString(kv.VBinary)
+			tag.Value = base64.RawStdEncoding.EncodeToString(kv.VBinary)
 		}
 
-		slice = append(slice, value)
+		tags = append(tags, tag)
 	}
 
-	return slice
-}
-
-func EncodeTags(input []model.KeyValue) ([]byte, error) {
-	// slice := encodeTagsToSlice(input)
-	slice := encodeTagsToStruct(input)
-
-	// bytes, err := json.Marshal(slice)
-	bytes, err := json.Marshal(slice)
+	bytes, err := json.Marshal(tags)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode to json: %w", err)
 	}
@@ -177,11 +167,11 @@ func variableIsMap(variable interface{}) bool {
 }
 
 func decodeTagsFromStruct(objects []any) ([]model.KeyValue, error) {
-	tags := make([]model.KeyValue, len(objects))
+	tags := make([]model.KeyValue, 0, len(objects))
 
 	for _, tag := range objects {
 		if !variableIsMap(tag) {
-			return nil, errors.New(fmt.Sprintf("Tag is not a map: %v", tag))
+			return nil, fmt.Errorf("tag is not a map: %v", tag)
 		}
 
 		cast := tag.(map[string]any)
@@ -190,7 +180,7 @@ func decodeTagsFromStruct(objects []any) ([]model.KeyValue, error) {
 		preCastValueType, ok3 := cast["Type"]
 
 		if !ok1 || !ok2 || !ok3 {
-			return nil, errors.New(fmt.Sprintf("Tag has missing keys: %v", tag))
+			return nil, fmt.Errorf("tag has missing keys: %v", tag)
 		}
 
 		key := preCastKey.(string)
@@ -238,13 +228,11 @@ func decodeTagsFromStruct(objects []any) ([]model.KeyValue, error) {
 }
 
 func DecodeTags(input []byte) ([]model.KeyValue, error) {
-	// slice := []any{}
 	slice := []any{}
 	if err := json.Unmarshal(input, &slice); err != nil {
 		return nil, fmt.Errorf("failed to decode tag json: %w", err)
 	}
 
-	// tags, err := decodeTagsFromSlice(slice)
 	tags, err := decodeTagsFromStruct(slice)
 	if err != nil {
 		return nil, err

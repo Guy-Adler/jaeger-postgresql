@@ -2,7 +2,6 @@ package sql
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -73,8 +72,6 @@ func formatTags(tags map[string]string) []TagContent {
 
 func (q *Queries) FindTraceIDs(ctx context.Context, arg FindTraceIDsParams) ([][]byte, error) {
 	tags := formatTags(arg.Tags)
-
-	fmt.Printf("tags: %+t\n", tags)
 
 	rows, err := q.db.Query(ctx, findTraceIDs,
 		arg.ServiceName,
