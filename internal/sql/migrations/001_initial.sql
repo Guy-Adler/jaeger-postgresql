@@ -46,6 +46,8 @@ CREATE INDEX idx_spans_operation_service ON spans(operation_id, service_id);
 CREATE INDEX idx_spans_start_duration ON spans(start_time, duration);
 CREATE INDEX idx_spans_start_time ON spans(start_time);
 CREATE INDEX idx_spans_duration ON spans(duration);
+CREATE INDEX idx_spans_tags ON spans USING GIN (tags);
+CREATE INDEX idx_spans_process_tags ON spans USING GIN (process_tags);
 
 -- +goose Down
 
